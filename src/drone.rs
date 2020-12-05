@@ -54,7 +54,7 @@ impl Drone {
 	pub fn run(&mut self) {}
 
 	pub fn report(&mut self) {
-		// Send a mess age to all "online" hosts that we know about.
+		// Send a message to all "online" hosts that we know about.
 	}	
 
 	/** Job related functions */
@@ -63,11 +63,11 @@ impl Drone {
 	pub fn finish(&mut self) {}
 
 	pub fn load(&mut self) {
-		// Load this worker's details from the local db.
+		// Load this worker's state from the local db.
 	}
 
 	pub fn save(&mut self) {
-		// Save this worker's details from the local db.
+		// Save this worker's state from the local db.
 	}
 	
 	pub fn submit(&mut self) {

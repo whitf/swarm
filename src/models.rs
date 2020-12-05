@@ -2,6 +2,14 @@ use uuid::Uuid;
 
 use crate::host::Host;
 
+pub enum MessageType {
+	FinishJob,
+	Online,
+	Offline,
+	StartJob,
+	QueueJob,
+}
+
 pub struct Message {
 	pub carbon_copy:				Vec<Host>,
 	pub id:							Uuid,
