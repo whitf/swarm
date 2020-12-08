@@ -34,7 +34,7 @@ impl Drone {
 		self.swarm.push(host);
 	}
 
-	pub fn forget(&mut self, host: Host) {
+	pub fn forget(&mut self, _host: Host) {
 		// Remove a known host from the swarm list (and archive it.);
 	}
 
@@ -58,7 +58,7 @@ impl Drone {
 	}	
 
 	/** Job related functions */
-	pub fn archive_job(&mut self, job_id: Uuid) {}
+	pub fn archive_job(&mut self, _job_id: Uuid) {}
 	
 	pub fn finish(&mut self) {}
 
@@ -77,5 +77,5 @@ impl Drone {
 
 	pub fn start(&mut self) {}
 	
-	pub fn work(&mut self, job_id: Uuid) {}
+	pub fn work(&mut self, _job_id: Uuid) {}
 }

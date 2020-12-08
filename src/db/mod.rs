@@ -1,6 +1,5 @@
 
-
-mod sql;
+pub mod sql;
 
 pub struct Database {
 	//pub client,
@@ -8,26 +7,9 @@ pub struct Database {
 }
 
 impl Database {
-	pub fn new(&mut self) -> Self {
+	pub fn verify_or_init(_db_path: String) -> bool {
 
-		Database {
 
-		}
-	}
-
-	pub fn init(&mut self) -> bool {
-		true
-	}
-
-	pub fn load(&mut self) -> bool {
-		true
-	}
-
-	pub fn save(&mut self) -> bool {
-		true
-	}
-
-	pub fn verify(&mut self) -> bool {
 		true
 	}
 }

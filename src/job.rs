@@ -1,8 +1,8 @@
 use uuid::Uuid;
 
 pub struct Job {
-	id:							Uuid,
-	tags:						Vec<String>,
+	_id:							Uuid,
+	_tags:						Vec<String>,
 }
 
 impl Job {
@@ -11,8 +11,10 @@ impl Job {
 		let tags = Vec::new();
 
 		Job {
-			id,
-			tags,
+			_id: id,
+			_tags: tags,
 		}
 	}
+
+
 }

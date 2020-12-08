@@ -10,4 +10,6 @@ edition = "2018"
 [dependencies]
 procfs = "0.9.1"
 rusqlite = "0.23.1"
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.5.7"
 uuid = { version = "0.8", features = ["serde", "v4"] }

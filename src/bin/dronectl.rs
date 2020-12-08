@@ -1,5 +1,5 @@
 use std::env;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::Command;
 
 fn get_sockets() -> Vec<String> {
@@ -18,9 +18,7 @@ fn get_sockets() -> Vec<String> {
 
 
 pub fn main() {
-	const VERSION: &'static str = env!("CARGO_PKG_VERSION");
-
-	let title = format!("swarn drone control v.{}", VERSION);
+	//const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
 	let mut args: Vec<String> = env::args().collect();
 
