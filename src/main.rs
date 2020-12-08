@@ -40,14 +40,19 @@ fn process_command(stream: UnixStream) {
 fn main() {
 	println!();
 	const VERSION: &'static str = env!("CARGO_PKG_VERSION");
-	const DEFAULT_CONFIG: &'static str = "data/etc/swarm/dron.cfg.toml";
+	const DEFAULT_CONFIG: &'static str = "data/etc/swarm/drone.cfg.toml";
 
 	// Check args for non-standard config file.
 
 	// Load basic config from file
-	let c = models::Config::new(DEFAULT_CONFIG);
+	let c = models::Config::load_or_new(DEFAULT_CONFIG);
 
 
+
+
+
+
+	
 
 	// grab id, db location, log location from config file (or create a new one)
 

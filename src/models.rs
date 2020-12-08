@@ -31,7 +31,7 @@ impl Message {
 	}
 }
 
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 pub struct Config {
 	pub db_path:						String,
 	pub error_log:						String,
@@ -41,44 +41,60 @@ pub struct Config {
 }
 
 impl Config {
-	pub fn new(file: &str) -> Self {
-		let toml_content = fs::read_to_string(file).expect("Failed to read toml config file.");
-		let config_value: Value = toml::from_str(&toml_content).expect("Failed to parse config values.");
-
+	pub fn load_or_new(file: &str) -> Self {
+		// Create default values, which will be overwritten if values are found in a config file.
 		let mut db_path = String::from("/usr/local/swarm/drone.db");
 		let mut error_log = String::from("/var/log/swarm/error.log");
 		let mut id = Uuid::new_v4();
 		let mut system_log = String::from("/var/log/swarm/system.log");
 
-		let config: &toml::map::Map<String, Value> = config_value["swarm"].as_table().unwrap();
-		for (k, v) in config.iter() {
-			let v_str = v.as_str().unwrap().to_string();
-			match k.as_str() {
-				"db_path" => {
-					db_path = v_str;
-				},
-				"error_log" => {
-					error_log = v_str;
-				},
-				"id" => {
-					id = Uuid::parse_str(&v_str).unwrap();
-				},
-				"system_log" => {
-					system_log = v_str;
-				},
-				_ => {
-					// Unrecognized items are irgnore and removed on "writeback".
-				},
+		let toml_content = fs::read_to_string(file);
+		match toml_content {
+			Ok(content) => {
+				let config_value: Value = toml::from_str(&content).expect("Failed to parse config values after file was found.\nFix or delete (for automatic recreation) config file.");
+				let config: &toml::map::Map<String, Value> = config_value["swarm"].as_table().unwrap();
+
+				for (k, v) in config.iter() {
+				let v_str = v.as_str().unwrap().to_string();
+					match k.as_str() {
+						"db_path" => {
+							db_path = v_str;
+						},
+						"error_log" => {
+							error_log = v_str;
+						},
+						"id" => {
+							id = Uuid::parse_str(&v_str).unwrap();
+						},
+						"system_log" => {
+							system_log = v_str;
+						},
+						_ => {
+							// Unrecognized items are irgnore and removed on "writeback".
+						},
+					}
+				}
+			},
+			Err(content_err) => {
+				if std::io::ErrorKind::NotFound == content_err.kind() {
+					// Log file not found issue, file will be created later by the config.save() call.
+					println!("Config file {} not found, creating a new one.", file);
+				}
+
 			}
 		}
 
-		Config {
+		let mut config = Config {
 			db_path,
 			error_log,
 			file: file.to_string(),
 			id,
 			system_log,
-		}
+		};
+
+		config.save();
+
+		return config;
 	}
 
 	pub fn save(&mut self) -> bool {

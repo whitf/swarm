@@ -1,0 +1,6 @@
+[swarm]
+db_path = "/usr/local/swarm/drone.db"
+error_log = "/var/log/swarm/error.log"
+file = "data/etc/swarm/drone.cfg.toml"
+id = "0ba4d157-cba3-49fe-93b1-023bea2387ed"
+system_log = "/var/log/swarm/system.log"
