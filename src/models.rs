@@ -33,20 +33,24 @@ impl Message {
 
 #[derive(Debug, Serialize)]
 pub struct Config {
-	pub db_path:						String,
+	pub db_dir:						String,
+	pub db_file:						String,
 	pub error_log:						String,
 	pub file:							String,
 	pub id:								Uuid,
+	pub log_dir:						String,
 	pub system_log:						String,
 }
 
 impl Config {
 	pub fn load_or_new(file: &str) -> Self {
 		// Create default values, which will be overwritten if values are found in a config file.
-		let mut db_path = String::from("/usr/local/swarm/drone.db");
-		let mut error_log = String::from("/var/log/swarm/error.log");
+		let mut db_dir = String::from("data/usr/local/swarm");
+		let mut db_file = String::from("drone.db");
+		let mut error_log = String::from("error.log");
 		let mut id = Uuid::new_v4();
-		let mut system_log = String::from("/var/log/swarm/system.log");
+		let mut log_dir = String::from("data/var/log/swarm");
+		let mut system_log = String::from("system.log");
 
 		let toml_content = fs::read_to_string(file);
 		match toml_content {
@@ -57,14 +61,20 @@ impl Config {
 				for (k, v) in config.iter() {
 				let v_str = v.as_str().unwrap().to_string();
 					match k.as_str() {
-						"db_path" => {
-							db_path = v_str;
+						"db_dir" => {
+							db_dir = v_str;
+						},
+						"db_file" => {
+							db_file = v_str;
 						},
 						"error_log" => {
 							error_log = v_str;
 						},
 						"id" => {
 							id = Uuid::parse_str(&v_str).unwrap();
+						},
+						"log_dir" => {
+							log_dir = v_str;
 						},
 						"system_log" => {
 							system_log = v_str;
@@ -85,10 +95,12 @@ impl Config {
 		}
 
 		let mut config = Config {
-			db_path,
+			db_dir,
+			db_file,
 			error_log,
 			file: file.to_string(),
 			id,
+			log_dir,
 			system_log,
 		};
 

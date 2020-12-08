@@ -5,6 +5,7 @@ use std::path::Path;
 use std::thread;
 
 use swarm::db;
+use swarm::log;
 use swarm::models;
 
 fn process_command(stream: UnixStream) {
@@ -44,26 +45,14 @@ fn main() {
 
 	// Check args for non-standard config file.
 
-	// Load basic config from file
 	let c = models::Config::load_or_new(DEFAULT_CONFIG);
 
-
-
-
-
-
-	
-
-	// grab id, db location, log location from config file (or create a new one)
-
-
 	// Start logging process.
-
-
+	let l = log::Log::init(c.id, c.log_dir, c.error_log, c.system_log);
 
 
 	// Database verification (or creation if needed.)
-	let _db = db::Database::verify_or_init(c.db_path);
+	//let _db = db::Database::verify_or_init(c.id, c.db_dir, c.db_file);
 
 
 
@@ -79,6 +68,7 @@ fn main() {
 	let listener = UnixListener::bind(socket_path).unwrap();
 
 	println!("Start dorne process v. {:?} (pid = {}).", VERSION, me.pid);
+	l.system(format!("Drone process v.{:?}, id = {}, pid = {} is online.", VERSION, c.id, me.pid));
 
 	for stream in listener.incoming() {
 		match stream {
