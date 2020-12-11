@@ -2,31 +2,23 @@ use chrono::Local;
 use std::fs;
 use std::fs::OpenOptions;
 use std::io::Write;
+use std::sync::mpsc::Receiver;
 use uuid::Uuid;
+
+use crate::models::{LogType, LogMessage, MessageType};
+
 
 const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
 // @TODO - log levels Warn, Fatal, Info, etc
 
-pub enum LogType {
-	ErrorLog,
-	SystemLog,
-}
-
 pub struct Log {
 	pub error_log:					String,
+	pub online:						bool,
 	pub system_log:					String,
 }
 
 impl Log {
-
-	pub fn error(&self, message: String) {
-		self.write(LogType::ErrorLog, message);
-	}
-
-	pub fn system(&self, message: String) {
-		self.write(LogType::SystemLog, message);
-	}
 	
 	fn format_msg(message: String) -> String {
 		let now = Local::now();
@@ -62,7 +54,26 @@ impl Log {
 
 		Log {
 			error_log,
+			online: false,
 			system_log,
+		}
+	}
+
+	pub fn run(&mut self, rx: Receiver<LogMessage>) {
+		self.online = true;
+
+		while self.online {
+			let msg = rx.recv().unwrap();
+
+			match msg.message_type {
+				MessageType::Message => {
+					self.write(msg.log_type, Log::format_msg(msg.message));
+				},
+				MessageType::Offline => {
+					// stop log process
+				},
+				_ => {},
+			}
 		}
 	}
 
@@ -81,4 +92,5 @@ impl Log {
 		}
 
 	}
+
 }

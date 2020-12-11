@@ -5,8 +5,30 @@ use uuid::Uuid;
 
 use crate::host::Host;
 
+pub enum LogType {
+	ErrorLog,
+	SystemLog,
+}
+
+pub struct LogMessage {
+	pub log_type:					LogType,
+	pub message:					String,
+	pub message_type:				MessageType,
+}
+
+impl LogMessage {
+	pub fn new(log_type: LogType, message: String) -> Self {
+		LogMessage {
+			log_type,
+			message,
+			message_type: MessageType::Message,
+		}
+	}
+}
+
 pub enum MessageType {
 	FinishJob,
+	Message,
 	Online,
 	Offline,
 	StartJob,
@@ -31,9 +53,9 @@ impl Message {
 	}
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Clone, Debug, Serialize)]
 pub struct Config {
-	pub db_dir:						String,
+	pub db_dir:							String,
 	pub db_file:						String,
 	pub error_log:						String,
 	pub file:							String,

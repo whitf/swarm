@@ -2,6 +2,7 @@ use procfs::process::Process;
 use std::io::{BufRead, BufReader};
 use std::os::unix::net::{UnixStream, UnixListener};
 use std::path::Path;
+use std::sync::mpsc;
 use std::thread;
 
 use swarm::db;
@@ -48,12 +49,14 @@ fn main() {
 	let c = models::Config::load_or_new(DEFAULT_CONFIG);
 
 	// Start logging process.
-	let l = log::Log::init(c.id, c.log_dir, c.error_log, c.system_log);
-
+	let (log_tx, log_rx) = mpsc::channel::<models::LogMessage>();
+	let mut l = log::Log::init(c.id.clone(), c.log_dir.clone(), c.error_log.clone(), c.system_log.clone());
+	let log_handle = thread::spawn(move || {
+		l.run(log_rx);
+	});
 
 	// Database verification (or creation if needed.)
-	let _db = db::Database::verify_or_init(c.id, c.db_dir, c.db_file);
-
+	let _db = db::Database::verify_or_init(c.id.clone(), c.db_dir.clone(), c.db_file.clone());
 
 
 	// Load additional config info from database.
@@ -68,7 +71,7 @@ fn main() {
 	let listener = UnixListener::bind(socket_path).unwrap();
 
 	println!("Start drone process v. {:?} (pid = {}).", VERSION, me.pid);
-	l.system(format!("Drone process v.{:?}, id = {}, pid = {} is online.", VERSION, c.id, me.pid));
+	log_tx.send(models::LogMessage::new(models::LogType::SystemLog, format!("Drone process v.{:?}, id = {}, pid = {} is online.", VERSION, c.id, me.pid))).unwrap();
 
 	for stream in listener.incoming() {
 		match stream {
@@ -82,4 +85,6 @@ fn main() {
 			},
 		}
 	}
+
+	log_handle.join().unwrap();
 }
