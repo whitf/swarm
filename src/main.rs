@@ -52,7 +52,7 @@ fn main() {
 
 
 	// Database verification (or creation if needed.)
-	//let _db = db::Database::verify_or_init(c.id, c.db_dir, c.db_file);
+	let _db = db::Database::verify_or_init(c.id, c.db_dir, c.db_file);
 
 
 
@@ -67,7 +67,7 @@ fn main() {
 	let socket_path = format!("/tmp/swarm_drone_{}.sock", me.pid);
 	let listener = UnixListener::bind(socket_path).unwrap();
 
-	println!("Start dorne process v. {:?} (pid = {}).", VERSION, me.pid);
+	println!("Start drone process v. {:?} (pid = {}).", VERSION, me.pid);
 	l.system(format!("Drone process v.{:?}, id = {}, pid = {} is online.", VERSION, c.id, me.pid));
 
 	for stream in listener.incoming() {
