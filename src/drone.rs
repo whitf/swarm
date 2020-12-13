@@ -83,6 +83,10 @@ impl Drone {
 		}
 
 		// Finish shutdown.
+		self.log_tx.send(LogMessage::new(
+			LogType::SystemLog,
+			format!("Swarm drone id = {} shutdown.", self.id)
+		)).unwrap();
 		std::thread::sleep(std::time::Duration::from_secs(2));	
 		std::process::exit(0x000);
 	}
