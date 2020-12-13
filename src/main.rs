@@ -89,7 +89,7 @@ fn main() {
 	});
 
 	println!("Start drone process v. {:?} (pid = {}).", VERSION, me.pid);
-	log_tx.send(models::LogMessage::new(models::LogType::SystemLog, format!("Drone process v.{:?}, id = {}, pid = {} is online.", VERSION, c.id, me.pid))).unwrap();
+	log_tx.send(models::LogMessage::new(models::LogType::SystemLog, format!("Drone process v.{}, id = {}, pid = {} is online.", VERSION, c.id, me.pid))).unwrap();
 
 	for stream in listener.incoming() {
 		match stream {
