@@ -3,7 +3,68 @@ use std::fs;
 use toml::Value;
 use uuid::Uuid;
 
-use crate::host::Host;
+pub enum DroneCtlType {
+	Offline,
+}
+
+pub struct DroneCtl {
+	pub dronectl_type:						DroneCtlType,
+	pub msg:								String,
+}
+
+impl DroneCtl {
+	pub fn new(dronectl_type: DroneCtlType, msg: String) -> Self {
+		DroneCtl {
+			dronectl_type,
+			msg,
+		}
+	}
+}
+
+pub enum HostStatus {
+	Online,
+	Offline,
+	Idle,
+	Working,
+}
+
+pub struct Host {
+	pub address:					String,
+	pub id:							Uuid,
+	pub port:						String,
+	pub online:						bool,
+	pub status:						HostStatus,
+}
+
+impl Host {
+	pub fn new(id: Uuid, address: String, port: String) -> Self {
+		let online = false;
+		let status = HostStatus::Offline;
+
+		Host {
+			address,
+			id,
+			port,
+			online,
+			status,
+		}
+	}
+
+	pub fn ping(&mut self) -> bool {
+		// Check to see if a remote host is responding.
+		true
+	}
+
+	// Mark a remote host online.
+	pub fn online(&mut self) {
+		self.online = true;
+	}
+
+	// Mark a remote host offline.
+	pub fn offline(&mut self) {
+		self.online = false;
+	}
+}
 
 pub enum LogType {
 	ErrorLog,

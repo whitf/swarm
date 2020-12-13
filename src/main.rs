@@ -7,10 +7,11 @@ use std::sync::mpsc;
 use std::thread;
 
 use swarm::db;
+use swarm::drone;
 use swarm::log;
 use swarm::models;
 
-fn process_command(stream: UnixStream) {
+fn process_command(stream: UnixStream, tx: mpsc::Sender<models::DroneCtl>) {
 	let stream = BufReader::new(stream);
 	for line in stream.lines() {
 		println!("received command...");
@@ -26,9 +27,7 @@ fn process_command(stream: UnixStream) {
 				let pid_path = Path::new(&socket_path);
 				let _ = std::fs::remove_file(&pid_path).unwrap();
 
-				println!();
-
-				std::process::exit(0);
+				tx.send(models::DroneCtl::new(models::DroneCtlType::Offline, "".to_string())).unwrap();
 			},
 			"RESTART" => {},
 			"SYNC" => {},
@@ -75,15 +74,19 @@ fn main() {
 	let _db = db::Database::verify_or_init(c.id.clone(), c.db_dir.clone(), c.db_file.clone(), log_tx.clone());
 
 	// Load additional config info from database.
-
-
-
-
+	// @TODO
 
 
 	let me = Process::myself().unwrap();
 	let socket_path = format!("/tmp/swarm_drone_{}.sock", me.pid);
 	let listener = UnixListener::bind(socket_path).unwrap();
+
+	let (drone_tx, drone_rx) = mpsc::channel::<models::DroneCtl>();
+	let mut d = drone::Drone::new(log_tx.clone());
+	let drone_handle = thread::spawn(move || {
+		d.online();
+		d.run(drone_rx);
+	});
 
 	println!("Start drone process v. {:?} (pid = {}).", VERSION, me.pid);
 	log_tx.send(models::LogMessage::new(models::LogType::SystemLog, format!("Drone process v.{:?}, id = {}, pid = {} is online.", VERSION, c.id, me.pid))).unwrap();
@@ -92,7 +95,8 @@ fn main() {
 		match stream {
 			Ok(stream) => {
 				println!("doing some stream stuff in another thread ....");
-				thread::spawn(|| process_command(stream));
+				let dtx = drone_tx.clone();
+				thread::spawn(|| process_command(stream, dtx));
 			},
 			Err(err) => {
 				println!("Error: {}", err);
@@ -101,5 +105,6 @@ fn main() {
 		}
 	}
 
+	drone_handle.join().unwrap();
 	log_handle.join().unwrap();
 }
