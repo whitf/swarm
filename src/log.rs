@@ -71,7 +71,7 @@ impl Log {
 
 			match msg.message_type {
 				MessageType::Message => {
-					self.write(msg.log_type, Log::format_msg(msg.message));
+					self.write(msg.log_type, msg.message);
 				},
 				MessageType::Offline => {
 					// stop log process
