@@ -1,3 +1,4 @@
+//use swarm::sql;
 
 pub const TABLE_COUNT: usize = 2;
 pub const FUNCTION_COUNT: usize = 0;
@@ -36,3 +37,14 @@ pub const JOB_STATUS_VALUES: [&str; 5] = [
 	"New",
 	"Working"
 ];
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn table_count_test() {
+		assert!(TABLE_COUNT == CREATE_TABLES.len());
+	}
+
+}
