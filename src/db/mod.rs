@@ -1,5 +1,5 @@
 //use fallible_iterator::FallibleIterator;
-use rusqlite::{Connection, NO_PARAMS, params, Result};
+use rusqlite::{Connection, NO_PARAMS, Result};
 use std::fs;
 use std::sync::mpsc::Sender;
 use uuid::Uuid;

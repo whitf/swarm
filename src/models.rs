@@ -61,6 +61,7 @@ pub struct Config {
 	pub file:							String,
 	pub id:								Uuid,
 	pub log_dir:						String,
+	pub port:							String,
 	pub system_log:						String,
 }
 
@@ -72,6 +73,7 @@ impl Config {
 		let mut error_log = String::from("error.log");
 		let mut id = Uuid::new_v4();
 		let mut log_dir = String::from("data/var/log/swarm");
+		let mut port = String::from("9079");
 		let mut system_log = String::from("system.log");
 
 		let toml_content = fs::read_to_string(file);
@@ -98,6 +100,9 @@ impl Config {
 						"log_dir" => {
 							log_dir = v_str;
 						},
+						"port" => {
+							port = v_str;
+						},
 						"system_log" => {
 							system_log = v_str;
 						},
@@ -123,6 +128,7 @@ impl Config {
 			file: file.to_string(),
 			id,
 			log_dir,
+			port,
 			system_log,
 		};
 

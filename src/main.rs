@@ -1,3 +1,4 @@
+use clap::{App, Arg};
 use procfs::process::Process;
 use std::io::{BufRead, BufReader};
 use std::os::unix::net::{UnixStream, UnixListener};
@@ -44,9 +45,24 @@ fn main() {
 	const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 	const DEFAULT_CONFIG: &'static str = "data/etc/swarm/drone.cfg.toml";
 
-	// Check args for non-standard config file.
+	let title = format!("swarm-drone v.{}", VERSION);
+	let matches = App::new(title)
+		.version(VERSION)
+		.about("A simple framework to create a server-less swarm of worker drones.")
+		.arg(Arg::with_name("config")
+			.short("c")
+			.long("config")
+			.takes_value(true)
+			.help("Specify a config file (Default: /etc/swarm/drone.cfg.toml"))
+		.arg(Arg::with_name("port")
+			.short("p")
+			.long("port")
+			.takes_value(true)
+			.help("Specify the port to listen on for inter-drone communications."))
+		.get_matches();
 
-	let c = models::Config::load_or_new(DEFAULT_CONFIG);
+	let mut c = models::Config::load_or_new(matches.value_of("config").unwrap_or(DEFAULT_CONFIG));
+	c.port = matches.value_of("port").unwrap_or(&c.port).to_string();
 
 	// Start logging process.
 	let (log_tx, log_rx) = mpsc::channel::<models::LogMessage>();
@@ -56,7 +72,7 @@ fn main() {
 	});
 
 	// Database verification (or creation if needed.)
-	let db = db::Database::verify_or_init(c.id.clone(), c.db_dir.clone(), c.db_file.clone(), log_tx.clone());
+	let _db = db::Database::verify_or_init(c.id.clone(), c.db_dir.clone(), c.db_file.clone(), log_tx.clone());
 
 	// Load additional config info from database.
 
