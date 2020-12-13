@@ -25,6 +25,10 @@ impl Log {
 		// YEAR-MM-DD HH-mm-ss
 		let timestamp = now.format("[%Y-%m-%d %H:%M:%S]");
 
+		if message.ends_with('\n') {
+			return format!("{} - {}", timestamp, message);
+		}
+
 		return format!("{} - {}\n", timestamp, message);
 	}
 	

@@ -56,8 +56,7 @@ fn main() {
 	});
 
 	// Database verification (or creation if needed.)
-	let _db = db::Database::verify_or_init(c.id.clone(), c.db_dir.clone(), c.db_file.clone());
-
+	let db = db::Database::verify_or_init(c.id.clone(), c.db_dir.clone(), c.db_file.clone(), log_tx.clone());
 
 	// Load additional config info from database.
 
