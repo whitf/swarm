@@ -1,9 +1,7 @@
 //use fallible_iterator::FallibleIterator;
 use rusqlite::{Connection, NO_PARAMS, params, Result};
 use std::fs;
-use std::iter::Iterator;
 use std::sync::mpsc::Sender;
-use std::thread;
 use uuid::Uuid;
 
 use crate::models::{LogType, LogMessage};
@@ -19,12 +17,24 @@ pub struct Database {
 }
 
 impl Database {
-	pub fn verify_or_init(id: Uuid, db_dir: String, db_file: String, log_tx: Sender<LogMessage>) -> Self {
+	pub fn verify_or_init(id: Uuid, db_dir: String, db_file: String, log_tx: Sender<LogMessage>) -> Result<Self, rusqlite::Error> {
 		const DATABASE_VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
 		match fs::create_dir_all(&db_dir) {
 			Err(err) => {
-				println!("failed to create log dir because {:?}", err);
+				log_tx.send(LogMessage::new(
+					LogType::ErrorLog,
+					format!("Failed to create database dir. Exit from fatal error: {:?}", err)
+				)).unwrap();
+
+				log_tx.send(LogMessage::new(
+					LogType::SystemLog,
+					"Database creation failed. See error log.".to_string()
+				)).unwrap();
+
+				println!("Database validation error: could not run fs::create_dir_all(db_dir). Exit from fata error: {:?}", err);
+				std::thread::sleep(std::time::Duration::from_secs(2));
+				std::process::exit(0x0102);
 			},
 			_ => {},
 		}
@@ -33,10 +43,10 @@ impl Database {
 		db_path.push('/');
 		db_path.push_str(&db_file);
 
-		let conn = Connection::open(&db_path).expect("[Database::verify_or_init] Failed to open database file.");
+		let conn = Connection::open(&db_path)?;
 
-		let mut stmt = conn.prepare(sql::SELECT_TABLE_COUNT).expect("Sql prepare statement failed.");
-		let count: i32 = stmt.query_row(NO_PARAMS, |row| row.get(0)).unwrap();
+		let mut stmt = conn.prepare(sql::SELECT_TABLE_COUNT)?;
+		let count: i32 = stmt.query_row(NO_PARAMS, |row| row.get(0))?;
 		let count = count as usize;
 
 		if count != sql::TABLE_COUNT && count != 0 {
@@ -61,14 +71,14 @@ impl Database {
 
 			 println!("Inilizing {} database tables...", sql::CREATE_TABLES.len());
 			 for create_table_stmt in sql::CREATE_TABLES.iter() {
-			 	conn.execute(create_table_stmt, NO_PARAMS).unwrap();
+			 	conn.execute(create_table_stmt, NO_PARAMS)?;
 			 }
 
 			 for job_status in sql::JOB_STATUS_VALUES.iter() {
-			 	conn.execute(sql::INSERT_JOB_STATUS_VALUES, &[job_status]).unwrap();
+			 	conn.execute(sql::INSERT_JOB_STATUS_VALUES, &[job_status])?;
 			 }
 
-			 conn.execute(sql::INSERT_DATABASE_VERSION, &[DATABASE_VERSION]);
+			 conn.execute(sql::INSERT_DATABASE_VERSION, &[DATABASE_VERSION])?;
 
 			 log_tx.send(LogMessage::new(
 			 	LogType::SystemLog,
@@ -78,8 +88,8 @@ impl Database {
 			 println!(" finished.");
 		}
 
-		let mut stmt = conn.prepare(sql::SELECT_DATABASE_VERSION).expect("Sql prepare statement failed.");
-		let database_version: String = stmt.query_row(NO_PARAMS, |row| row.get(0)).unwrap();
+		let mut stmt = conn.prepare(sql::SELECT_DATABASE_VERSION)?;
+		let database_version: String = stmt.query_row(NO_PARAMS, |row| row.get(0))?;
 
 		if database_version != DATABASE_VERSION {
 			log_tx.send(LogMessage::new(
@@ -102,12 +112,12 @@ impl Database {
 			format!("Database v.{} validated: {} of {} tables.", DATABASE_VERSION, count, sql::TABLE_COUNT)
 		)).unwrap();
 
-		Database {
+		Ok(Database {
 			db_dir,
 			db_file,
 			db_path,
 			id,
 			log_tx,
-		}
+		})
 	}
 }
