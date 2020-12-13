@@ -71,7 +71,7 @@ fn main() {
 	});
 
 	// Database verification (or creation if needed.)
-	let _db = db::Database::verify_or_init(c.id.clone(), c.db_dir.clone(), c.db_file.clone(), log_tx.clone());
+	let db = db::Database::verify_or_init(c.id.clone(), c.db_dir.clone(), c.db_file.clone(), log_tx.clone());
 
 	// Load additional config info from database.
 	// @TODO
@@ -82,7 +82,7 @@ fn main() {
 	let listener = UnixListener::bind(socket_path).unwrap();
 
 	let (drone_tx, drone_rx) = mpsc::channel::<models::DroneCtl>();
-	let mut d = drone::Drone::new(log_tx.clone());
+	let mut d = drone::Drone::new(db.unwrap(), log_tx.clone());
 	let drone_handle = thread::spawn(move || {
 		d.online();
 		d.run(drone_rx);

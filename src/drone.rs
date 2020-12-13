@@ -1,10 +1,12 @@
 use std::sync::mpsc::{Receiver, Sender};
 use uuid::Uuid;
 
+use crate::db;
 use crate::job;
 use crate::models::{DroneCtlType, DroneCtl, Host, LogType, LogMessage};
 
 pub struct Drone {
+	pub db:						db::Database,
 	pub id:						Uuid,
 	pub log_tx:					Sender<LogMessage>,
 	pub online:					bool,
@@ -15,7 +17,7 @@ pub struct Drone {
 }
 
 impl Drone {
-	pub fn new(log_tx: Sender<LogMessage>) -> Self {
+	pub fn new(db: db::Database, log_tx: Sender<LogMessage>) -> Self {
 		let id = Uuid::new_v4();
 		let online = false;
 		let swarm = Vec::new();
@@ -24,6 +26,7 @@ impl Drone {
 		let workload = Vec::new();
 
 		Drone {
+			db,
 			id,
 			log_tx,
 			online,
