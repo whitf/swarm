@@ -51,7 +51,7 @@ impl Drone {
 	fn online(&mut self, host: Host) {
 		let host_id = host.id.clone();
 
-		self.db.update_host(&host);
+		self.db.update_host(&host).unwrap();
 		self.swarm.insert(host.id, host);
 
 		self.log_tx.send(LogMessage::new(
@@ -63,7 +63,7 @@ impl Drone {
 	fn offline(&mut self, host: Host) {
 		let host_id = host.id.clone();
 
-		self.db.update_host(&host);
+		self.db.update_host(&host).unwrap();
 		self.swarm.insert(host.id, host);
 
 		self.log_tx.send(LogMessage::new(
@@ -122,7 +122,7 @@ impl Drone {
 		// Load this worker's state from the local db.
 	}
 
-	fn save(&mut self) {
+	fn _save(&mut self) {
 		// Save this worker's state from the local db.
 	}
 	

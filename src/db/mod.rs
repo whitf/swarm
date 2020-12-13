@@ -17,7 +17,7 @@ pub struct Database {
 }
 
 impl Database {
-	pub fn update_host( &self, host: &Host) -> Result<(), rusqlite::Error> {
+	pub fn update_host( &self, host: &Host) -> Result<()> {
 		let conn = Connection::open(&self.db_path)?;
 		let mut stmt = conn.prepare(sql::INSERT_OR_UPDATE_DRONE)?;
 		stmt.execute(&[host.address.to_owned(), host.id.to_string(), host.online.to_string(), host.port.to_owned()])?;

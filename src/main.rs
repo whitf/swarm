@@ -60,11 +60,13 @@ fn process_message(address: String, port: u32, tx: mpsc::Sender<DroneCtl>) {
 						MessageType::Message => {},
 						MessageType::Online => {
 							// Notification that a drone has come online.
-
+							let host: Host = bincode::deserialize(msg.message.as_bytes()).unwrap();
+							tx.send(DroneCtl::new(DroneCtlType::Online, Some(host), "".to_string())).unwrap();
 						},
 						MessageType::Offline => {
 							// Notification that a drone has gone offline.
-
+							let host: Host = bincode::deserialize(msg.message.as_bytes()).unwrap();
+							tx.send(DroneCtl::new(DroneCtlType::Offline, Some(host), "".to_string())).unwrap();
 						},
 						MessageType::StartJob => {
 							// Notification from a drone that a job has been started.
