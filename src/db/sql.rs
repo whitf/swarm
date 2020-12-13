@@ -18,7 +18,7 @@ pub const CREATE_TABLE_DATABASE_VERSION: &str = "
 
 pub const CREATE_TABLE_DRONE: &str = "
 	CREATE TABLE drone (
-		active bool NOT NULL DEFAULT true,
+		online bool NOT NULL DEFAULT true,
 		address VARCHAR(20) NOT NULL,
 		id Uuid PRIMARY KEY NOT NULL,
 		port INTEGER NOT NULL DEFAULT 9079
@@ -64,6 +64,15 @@ pub const JOB_STATUS_VALUES: [&str; 5] = [
 pub const INSERT_JOB_STATUS_VALUES: &str = "INSERT INTO job_status_enum (job_status) VALUES(?1);";
 
 pub const INSERT_DATABASE_VERSION: &str = "INSERT INTO database_version (version) VALUES(?1);";
+
+pub const INSERT_OR_UPDATE_DRONE: &str = "
+	INSERT INTO drone (address, id, online, port)
+	VALUES(?1, ?2, ?3, ?4)
+	ON CONFLICT (id)
+	DO
+		UPDATE
+			address = ?1, online = ?3, port = ?4;
+";
 
 
 

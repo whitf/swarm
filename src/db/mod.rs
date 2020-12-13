@@ -4,7 +4,7 @@ use std::fs;
 use std::sync::mpsc::Sender;
 use uuid::Uuid;
 
-use crate::models::{LogType, LogMessage};
+use crate::models::{Host, LogType, LogMessage};
 
 pub mod sql;
 
@@ -17,6 +17,14 @@ pub struct Database {
 }
 
 impl Database {
+	pub fn update_host( &self, host: &Host) -> Result<(), rusqlite::Error> {
+		let conn = Connection::open(&self.db_path)?;
+		let mut stmt = conn.prepare(sql::INSERT_OR_UPDATE_DRONE)?;
+		stmt.execute(&[host.address.to_owned(), host.id.to_string(), host.online.to_string(), host.port.to_owned()])?;
+
+		Ok(())
+	}
+
 	pub fn verify_or_init(id: Uuid, db_dir: String, db_file: String, log_tx: Sender<LogMessage>) -> Result<Self, rusqlite::Error> {
 		const DATABASE_VERSION: &'static str = env!("CARGO_PKG_VERSION");
 

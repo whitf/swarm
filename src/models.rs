@@ -1,26 +1,35 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::fs;
 use toml::Value;
 use uuid::Uuid;
 
+#[derive(Deserialize, Debug, Serialize)]
 pub enum DroneCtlType {
+	FinishJob,
+	Online,
 	Offline,
+	Stop,
+	StartJob,
 }
 
+#[derive(Deserialize, Debug, Serialize)]
 pub struct DroneCtl {
 	pub dronectl_type:						DroneCtlType,
+	pub host_data:							Option<Host>,
 	pub msg:								String,
 }
 
 impl DroneCtl {
-	pub fn new(dronectl_type: DroneCtlType, msg: String) -> Self {
+	pub fn new(dronectl_type: DroneCtlType, host_data: Option<Host>, msg: String) -> Self {
 		DroneCtl {
 			dronectl_type,
+			host_data,
 			msg,
 		}
 	}
 }
 
+#[derive(Deserialize, Debug, Serialize)]
 pub enum HostStatus {
 	Online,
 	Offline,
@@ -28,6 +37,7 @@ pub enum HostStatus {
 	Working,
 }
 
+#[derive(Deserialize, Debug, Serialize)]
 pub struct Host {
 	pub address:					String,
 	pub id:							Uuid,
@@ -87,35 +97,41 @@ impl LogMessage {
 	}
 }
 
+#[derive(Deserialize, Debug, Serialize)]
 pub enum MessageType {
 	FinishJob,
 	Message,
 	Online,
 	Offline,
 	StartJob,
+	Unknown,
 	QueueJob,
 }
 
+#[derive(Deserialize, Debug, Serialize)]
 pub struct Message {
 	pub carbon_copy:				Vec<Host>,
 	pub id:							Uuid,
 	pub message:					String,
+	pub message_type:				MessageType,
 }
 
 impl Message {
-	pub fn new(carbon_copy: Vec<Host>, message: String) -> Self {
+	pub fn new(carbon_copy: Vec<Host>, message: String, message_type: MessageType) -> Self {
 		let id = Uuid::new_v4();
 
 		Message {
 			carbon_copy,
 			id,
 			message,
+			message_type,
 		}
 	}
 }
 
 #[derive(Clone, Debug, Serialize)]
 pub struct Config {
+	pub address:						String,
 	pub db_dir:							String,
 	pub db_file:						String,
 	pub error_log:						String,
@@ -129,6 +145,7 @@ pub struct Config {
 impl Config {
 	pub fn load_or_new(file: &str) -> Self {
 		// Create default values, which will be overwritten if values are found in a config file.
+		let mut address = String::from("0.0.0.0");
 		let mut db_dir = String::from("data/usr/local/swarm");
 		let mut db_file = String::from("drone.db");
 		let mut error_log = String::from("error.log");
@@ -146,6 +163,9 @@ impl Config {
 				for (k, v) in config.iter() {
 				let v_str = v.as_str().unwrap().to_string();
 					match k.as_str() {
+						"address" => {
+							address = v_str;
+						},
 						"db_dir" => {
 							db_dir = v_str;
 						},
@@ -183,6 +203,7 @@ impl Config {
 		}
 
 		let mut config = Config {
+			address,
 			db_dir,
 			db_file,
 			error_log,
