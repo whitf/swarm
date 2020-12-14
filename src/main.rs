@@ -29,7 +29,7 @@ fn process_command(stream: UnixStream, tx: mpsc::Sender<DroneCtl>) {
 				let pid_path = Path::new(&socket_path);
 				let _ = std::fs::remove_file(&pid_path).unwrap();
 
-				tx.send(DroneCtl::new(DroneCtlType::Stop, None, "".to_string())).unwrap();
+				tx.send(DroneCtl::new(DroneCtlType::Stop, None, None, None)).unwrap();
 			},
 			"RESTART" => {},
 			"SYNC" => {},
@@ -56,24 +56,31 @@ fn process_message(address: String, port: u32, tx: mpsc::Sender<DroneCtl>) {
 					match msg.message_type {
 						MessageType::FinishJob => {
 							// Notification from a drone that a job has been finished.
+							let host: Host = bincode::deserialize(msg.message.as_bytes()).unwrap();
+							tx.send(DroneCtl::new(DroneCtlType::FinishJob, Some(host), None, None)).unwrap();
 						},
-						MessageType::Message => {},
+						MessageType::Message => {
+							tx.send(DroneCtl::new(DroneCtlType::Message, None, None, Some(msg.message))).unwrap();
+						},
 						MessageType::Online => {
 							// Notification that a drone has come online.
 							let host: Host = bincode::deserialize(msg.message.as_bytes()).unwrap();
-							tx.send(DroneCtl::new(DroneCtlType::Online, Some(host), "".to_string())).unwrap();
+							tx.send(DroneCtl::new(DroneCtlType::Online, Some(host), None, None)).unwrap();
 						},
 						MessageType::Offline => {
 							// Notification that a drone has gone offline.
 							let host: Host = bincode::deserialize(msg.message.as_bytes()).unwrap();
-							tx.send(DroneCtl::new(DroneCtlType::Offline, Some(host), "".to_string())).unwrap();
+							tx.send(DroneCtl::new(DroneCtlType::Offline, Some(host), None, None)).unwrap();
 						},
 						MessageType::StartJob => {
 							// Notification from a drone that a job has been started.
-
+							let host: Host = bincode::deserialize(msg.message.as_bytes()).unwrap();
+							tx.send(DroneCtl::new(DroneCtlType::StartJob, Some(host), None, None)).unwrap();
 						},
 						MessageType::QueueJob => {
-
+							// Notification of a new job to be queued.
+							let job: Job = bincode::deserialize(msg.message.as_bytes()).unwrap();
+							tx.send(DroneCtl::new(DroneCtlType::QueueJob, None, Some(job), None)).unwrap();
 						},
 						_ => {
 							// Unknown message from another drone.

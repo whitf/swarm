@@ -3,131 +3,6 @@ use std::fs;
 use toml::Value;
 use uuid::Uuid;
 
-#[derive(Deserialize, Debug, Serialize)]
-pub enum DroneCtlType {
-	FinishJob,
-	Online,
-	Offline,
-	Stop,
-	StartJob,
-}
-
-#[derive(Deserialize, Debug, Serialize)]
-pub struct DroneCtl {
-	pub dronectl_type:						DroneCtlType,
-	pub host_data:							Option<Host>,
-	pub msg:								String,
-}
-
-impl DroneCtl {
-	pub fn new(dronectl_type: DroneCtlType, host_data: Option<Host>, msg: String) -> Self {
-		DroneCtl {
-			dronectl_type,
-			host_data,
-			msg,
-		}
-	}
-}
-
-#[derive(Deserialize, Debug, Serialize)]
-pub enum HostStatus {
-	Online,
-	Offline,
-	Idle,
-	Working,
-}
-
-#[derive(Deserialize, Debug, Serialize)]
-pub struct Host {
-	pub address:					String,
-	pub id:							Uuid,
-	pub port:						String,
-	pub online:						bool,
-	pub status:						HostStatus,
-}
-
-impl Host {
-	pub fn new(id: Uuid, address: String, port: String) -> Self {
-		let online = false;
-		let status = HostStatus::Offline;
-
-		Host {
-			address,
-			id,
-			port,
-			online,
-			status,
-		}
-	}
-
-	pub fn ping(&mut self) -> bool {
-		// Check to see if a remote host is responding.
-		true
-	}
-
-	// Mark a remote host online.
-	pub fn online(&mut self) {
-		self.online = true;
-	}
-
-	// Mark a remote host offline.
-	pub fn offline(&mut self) {
-		self.online = false;
-	}
-}
-
-pub enum LogType {
-	ErrorLog,
-	SystemLog,
-}
-
-pub struct LogMessage {
-	pub log_type:					LogType,
-	pub message:					String,
-	pub message_type:				MessageType,
-}
-
-impl LogMessage {
-	pub fn new(log_type: LogType, message: String) -> Self {
-		LogMessage {
-			log_type,
-			message,
-			message_type: MessageType::Message,
-		}
-	}
-}
-
-#[derive(Deserialize, Debug, Serialize)]
-pub enum MessageType {
-	FinishJob,
-	Message,
-	Online,
-	Offline,
-	StartJob,
-	Unknown,
-	QueueJob,
-}
-
-#[derive(Deserialize, Debug, Serialize)]
-pub struct Message {
-	pub carbon_copy:				Vec<Host>,
-	pub id:							Uuid,
-	pub message:					String,
-	pub message_type:				MessageType,
-}
-
-impl Message {
-	pub fn new(carbon_copy: Vec<Host>, message: String, message_type: MessageType) -> Self {
-		let id = Uuid::new_v4();
-
-		Message {
-			carbon_copy,
-			id,
-			message,
-			message_type,
-		}
-	}
-}
 
 #[derive(Clone, Debug, Serialize)]
 pub struct Config {
@@ -228,4 +103,152 @@ impl Config {
 
 		true
 	}
+}
+
+#[derive(Deserialize, Debug, Serialize)]
+pub struct DroneCtl {
+	pub dronectl_type:						DroneCtlType,
+	pub host_data:							Option<Host>,
+	pub job_data:							Option<Job>,
+	pub msg:								Option<String>,
+}
+
+impl DroneCtl {
+	pub fn new(dronectl_type: DroneCtlType, host_data: Option<Host>, job_data: Option<Job>, msg: Option<String>) -> Self {
+		DroneCtl {
+			dronectl_type,
+			host_data,
+			job_data,
+			msg,
+		}
+	}
+}
+
+#[derive(Deserialize, Debug, Serialize)]
+pub enum DroneCtlType {
+	FinishJob,
+	Message,
+	Online,
+	Offline,
+	QueueJob,
+	Stop,
+	StartJob,
+}
+
+#[derive(Deserialize, Debug, Serialize)]
+pub enum HostStatus {
+	Online,
+	Offline,
+	Idle,
+	Working,
+}
+
+#[derive(Deserialize, Debug, Serialize)]
+pub struct Host {
+	pub address:					String,
+	pub id:							Uuid,
+	pub port:						String,
+	pub online:						bool,
+	pub status:						HostStatus,
+}
+
+impl Host {
+	pub fn new(id: Uuid, address: String, port: String) -> Self {
+		let online = false;
+		let status = HostStatus::Offline;
+
+		Host {
+			address,
+			id,
+			port,
+			online,
+			status,
+		}
+	}
+
+	pub fn ping(&mut self) -> bool {
+		// Check to see if a remote host is responding.
+		true
+	}
+
+	// Mark a remote host online.
+	pub fn online(&mut self) {
+		self.online = true;
+	}
+
+	// Mark a remote host offline.
+	pub fn offline(&mut self) {
+		self.online = false;
+	}
+}
+
+#[derive(Deserialize, Debug, Serialize)]
+pub struct Job {
+	id:								Uuid,
+	tags:							Vec<String>,
+}
+
+impl Job {
+	pub fn new() -> Self {
+		let id = Uuid::new_v4();
+		let tags = Vec::new();
+
+		Job {
+			id,
+			tags,
+		}
+	}
+}
+
+pub struct LogMessage {
+	pub log_type:					LogType,
+	pub message:					String,
+	pub message_type:				MessageType,
+}
+
+impl LogMessage {
+	pub fn new(log_type: LogType, message: String) -> Self {
+		LogMessage {
+			log_type,
+			message,
+			message_type: MessageType::Message,
+		}
+	}
+}
+
+pub enum LogType {
+	ErrorLog,
+	SystemLog,
+}
+
+#[derive(Deserialize, Debug, Serialize)]
+pub struct Message {
+	pub carbon_copy:				Vec<Host>,
+	pub id:							Uuid,
+	pub message:					String,
+	pub message_type:				MessageType,
+}
+
+impl Message {
+	pub fn new(carbon_copy: Vec<Host>, message: String, message_type: MessageType) -> Self {
+		let id = Uuid::new_v4();
+
+		Message {
+			carbon_copy,
+			id,
+			message,
+			message_type,
+		}
+	}
+}
+
+#[derive(Deserialize, Debug, Serialize)]
+pub enum MessageType {
+	FinishJob,
+	Message,
+	Online,
+	Offline,
+	StartJob,
+	Unknown,
+	QueueJob,
 }

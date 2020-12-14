@@ -3,8 +3,7 @@ use std::sync::mpsc::{Receiver, Sender};
 use uuid::Uuid;
 
 use crate::db;
-use crate::job;
-use crate::models::{DroneCtlType, DroneCtl, Host, LogType, LogMessage};
+use crate::models::*;
 
 pub struct Drone {
 	pub db:						db::Database,
@@ -14,7 +13,7 @@ pub struct Drone {
 	pub swarm:					HashMap<Uuid, Host>,
 	pub tags:					Vec<String>,
 	pub threads:				usize,
-	pub workload:				Vec<job::Job>,
+	pub workload:				Vec<Job>,
 }
 
 impl Drone {
@@ -38,7 +37,7 @@ impl Drone {
 		}
 	}
 
-	/** swarm (groups of other hosts) related functions */
+	/** swarm related functions */
 	pub fn search(&mut self) {
 		// Search local archives (read: sqlite db) for info about messages/host(s)/jobs/etc.
 	}
@@ -47,7 +46,6 @@ impl Drone {
 		// Reach out to all known hosts and ask for their host lists, workloads, etc.
 	}
 
-	/** swarm (this drone) related functions */
 	fn online(&mut self, host: Host) {
 		let host_id = host.id.clone();
 
@@ -111,24 +109,6 @@ impl Drone {
 
 	pub fn report(&mut self) {
 		// Send a message to all "online" hosts that we know about.
-	}	
-
-	/** Job related functions */
-	pub fn archive_job(&mut self, _job_id: Uuid) {}
-	
-	pub fn finish(&mut self) {}
-
-	pub fn load(&mut self) {
-		// Load this worker's state from the local db.
-	}
-
-	fn _save(&mut self) {
-		// Save this worker's state from the local db.
-	}
-	
-	pub fn submit(&mut self) {
-		// Add a new job to the queue.
-		// This inlcudes passing the job details on to all known hosts.
 	}
 
 	pub fn start(&mut self) {
@@ -138,6 +118,28 @@ impl Drone {
 	fn stop (&mut self) {
 		self.online = false;
 	}
+
+	/** Job related functions */
+	fn _archive_job(&mut self, _job_id: Uuid) {}
 	
+	fn _finish_job(&mut self) {
+
+	}
+
+	fn _load(&mut self) {
+		// Load this worker's state from the local db.
+	}
+
+	fn _save(&mut self) {
+		// Save this worker's state from the local db.
+	}
+
+	fn _start_job(&mut self) {}
+	
+	pub fn submit(&mut self) {
+		// Add a new job to the queue.
+		// This inlcudes passing the job details on to all known hosts.
+	}
+
 	pub fn work(&mut self, _job_id: Uuid) {}
 }
