@@ -1,8 +1,9 @@
+use clap::{App, AppSettings, Arg};
+use std::collections::HashMap;
 use std::env;
 use std::path::Path;
-use std::process::Command;
 
-fn get_sockets() -> Vec<String> {
+fn _get_sockets() -> Vec<String> {
 
 	let pid = 509000i32;
 
@@ -16,63 +17,68 @@ fn get_sockets() -> Vec<String> {
 	return sockets;
 }
 
-
 pub fn main() {
-	//const VERSION: &'static str = env!("CARGO_PKG_VERSION");
+	const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
-	let mut args: Vec<String> = env::args().collect();
+	let matches = App::new("swarm dronectl utility")
+		.version(VERSION)
+		.version_short("v")
+		.setting(AppSettings::ArgRequiredElseHelp)
+		.setting(AppSettings::NextLineHelp)
+		.about("The command line control utility for a swarm drone.")
+		.arg(Arg::with_name("details")
+			.long("details")
+			.takes_value(false)
+			.help("Report extended drone process details."))
+		.arg(Arg::with_name("kill")
+			.long("kill")
+			.takes_value(false)
+			.conflicts_with_all(&["configure", "details", "restart", "status", "start", "stop"])
+			.help("Perform an immediate \"hard\" shutdown of the drone process.\nNOTE!: This command will preempt any other commands."))
+		.arg(Arg::with_name("restart")
+			.long("restart")
+			.takes_value(false)
+			.help("Restart the drone process."))
+		.arg(Arg::with_name("start")
+			.long("start")
+			.takes_value(false)
+			.conflicts_with_all(&["restart", "stop"])
+			.help("Start the drone process."))
+		.arg(Arg::with_name("status")
+			.long("status")
+			.takes_value(false)
+			.help("Report the basic drone status information."))
+		.arg(Arg::with_name("stop")
+			.long("stop")
+			.takes_value(false)
+			.conflicts_with_all(&["restart", "start"])
+			.help("Perform a \"clean\" shutdown of the drone process."))
+		.get_matches();
 
 	println!();
-	println!("length of args = {}", args.len());
 
-	if 1 <= args.len() {
-		args.push(String::from("help"));
+	if matches.is_present("kill") {
+		println!("Killing the drone process.");
 	}
 
-	let cmd = &args[1];
+	if matches.is_present("status") {
+		println!("Reporting the basic drone status...");
+	}
 
-	match &cmd[..] {
-		"configure" => {
+	if matches.is_present("details") {
+		println!("Reporting more detailed drone information...");
+	}
 
-		},
-		"restart" => {
-			println!("restart the daemon...");
-		},
-		"start" => {
-			println!("start the daemon...");
+	if matches.is_present("restart") {
+		println!("Restarting the drone process...");
+	}
 
-			let mut command = Command::new("/usr/local/bin/looper");
+	if matches.is_present("start") {
+		println!("Starting the drone process...");
+	}
 
-			if let Ok(child) = command.spawn() {
-				println!("child (pid = {}) is running", child.id());
-			} else {
-				println!("ls command didn't start...");
-			}
-		},
-		"status" => {
-			println!("display the status");
-		},
-		"stop" => {
-			println!("Shutting down the process...");
-			let paths = get_sockets();
-
-			println!("found {} socket files", paths.len());
-
-			for path in paths {
-				println!("path = {:?}", path);
-			}
-
-			/*
-			if let Some(path) = get_sockets() {
-				println!("socket path = {:?}", path);
-			} else {
-				println!("failed to find pid for process");
-			}
-			*/
-		},
-		"help" | _ => {
-			println!("help info goes here");
-		},
+	if matches.is_present("stop") {
+		println!("Stopping the drone process...");
 	}
 
 	println!();

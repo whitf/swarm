@@ -102,8 +102,7 @@ fn main() {
 	const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 	const DEFAULT_CONFIG: &'static str = "data/etc/swarm/drone.cfg.toml";
 
-	let title = format!("swarm-drone v.{}", VERSION);
-	let matches = App::new(title)
+	let matches = App::new("swarm drone")
 		.version(VERSION)
 		.about("A simple framework to create a server-less swarm of worker drones.")
 		.arg(Arg::with_name("address")
