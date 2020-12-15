@@ -116,6 +116,11 @@ impl Drone {
 	}
 
 	fn stop (&mut self) {
+		self.log_tx.send(LogMessage::new(
+			LogType::SystemLog,
+			format!("Swarm drone id = {} received shutdown message from dronectl.", self.id)
+		)).unwrap();
+
 		self.online = false;
 	}
 

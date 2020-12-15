@@ -19,7 +19,7 @@ fn process_command(stream: UnixStream, tx: mpsc::Sender<DroneCtl>) {
 		println!("received command...");
 
 		match &line.unwrap()[..] {
-			"HALT" => {
+			"SHUTDOWN" => {
 				//shutdown signal
 				let me = Process::myself().unwrap();
 				println!("Shutting down swarm drone (pid = {}).", me.pid);
@@ -30,9 +30,11 @@ fn process_command(stream: UnixStream, tx: mpsc::Sender<DroneCtl>) {
 				let _ = std::fs::remove_file(&pid_path).unwrap();
 
 				tx.send(DroneCtl::new(DroneCtlType::Stop, None, None, None)).unwrap();
+
+				println!("Done");
+				thread::sleep(std::time::Duration::from_secs(2));
 			},
 			"RESTART" => {},
-			"SYNC" => {},
 			_ => {
 				// unrecognised command
 				// log and ignore
@@ -172,6 +174,7 @@ fn main() {
 		match stream {
 			Ok(stream) => {
 				println!("doing some stream stuff in another thread ....");
+
 				let dtx = drone_tx.clone();
 				thread::spawn(|| process_command(stream, dtx));
 			},
